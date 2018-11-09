@@ -73,7 +73,7 @@ def score_models(models, X,y):
 
 train = pd.read_csv('input/train.csv')
 test = pd.read_csv('input/test.csv')
-
+'''
 # 数据预处理 类别编码
 cate_cols = ['job', 'marital', 'education', 'default', 'housing', 'loan', 'contact', 'day', 'month', 'poutcome']
 for col in cate_cols:
@@ -90,6 +90,7 @@ test = pd.get_dummies(test, columns=cate_cols)
 # test[num_cols] = scaler.transform(test[num_cols].values)
 print(train.shape)
 print(test.shape)
+'''
 cols = [col for col in train.columns if col not in ['id', 'y']]
 X = train[cols]
 y = train['y']
