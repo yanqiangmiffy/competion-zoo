@@ -1,10 +1,10 @@
-# !/usr/bin/env python  
-# -*- coding:utf-8 _*-  
-""" 
-@Author:yanqiang 
-@File: stacking_demo.py 
+# !/usr/bin/env python
+# -*- coding:utf-8 _*-
+"""
+@Author:yanqiang
+@File: stacking_demo.py
 @Time: 2018/11/27 10:59
-@Software: PyCharm 
+@Software: PyCharm
 @Description:
 """
 from sklearn import datasets
@@ -23,7 +23,7 @@ iris = datasets.load_iris()
 X, y = iris.data[:, 1:3], iris.target
 x_train, x_test, y_train, y_test = train_test_split(X, y)
 
-## 第一个例子
+# 第一个例子
 nn = KNeighborsClassifier(n_neighbors=1)
 rfc = RandomForestClassifier(random_state=1)
 nb = GaussianNB()
@@ -47,29 +47,30 @@ for clf, label in zip([nn, rfc, nb, sclf],
     print("Accuracy: %0.2f (+/- %0.2f) [%s]"
           % (scores.mean(), scores.std(), label))
 
-### 第二个例子：
-stack_model = [nn, rfc, nb, xgb, lgb]  ## 这个地方我是简写，实际这样训练会报错，需要自己导库，定义分类器
-## train_data 表示训练集，train_label 表示训练集的标签，test_data表示训练集
-ntrain = x_train.shape[0]  ## 训练集样本数量
+# 第二个例子：
+stack_model = [nn, rfc, nb, xgb, lgb]  # 这个地方我是简写，实际这样训练会报错，需要自己导库，定义分类器
+# train_data 表示训练集，train_label 表示训练集的标签，test_data表示训练集
+ntrain = x_train.shape[0]  # 训练集样本数量
 print(ntrain)
-ntest = x_test.shape[0]  ## 测试集样本数量
-train_stack = np.zeros((ntrain, 5))  ##  n表示n个模型
-test_stack = np.zeros((ntest, 5))  ##
-kfold=KFold(n_splits=5)
+ntest = x_test.shape[0]  # 测试集样本数量
+train_stack = np.zeros((ntrain, 5))  # n表示n个模型
+test_stack = np.zeros((ntest, 5))
+kfold = KFold(n_splits=5)
 kf = kfold.split(x_train, y_train)
 
 for i, model in enumerate(stack_model):
     for j, (train_fold, validate) in enumerate(kf):
         X_train, X_validate, label_train, label_validate = \
-            x_train[train_fold, :], x_train[validate, :], y_train[train_fold], y_train[validate]
+            x_train[train_fold, :], x_train[validate,
+                                            :], y_train[train_fold], y_train[validate]
 
         model.fit(X_train, label_train)
         train_stack[validate, i] = model.predict(X_validate)
         test_stack[:, i] = model.predict(x_test)
 
-### 假设就只有两层，那么最后预测：
+# 假设就只有两层，那么最后预测：
 
-final_model = xgb()  ## 假设第二层我们还是用xgb吧,这个地方也是简写，仅仅表示这个地方是xgb模型
+final_model = xgb()  # 假设第二层我们还是用xgb吧,这个地方也是简写，仅仅表示这个地方是xgb模型
 final_model.fit(train_stack, y_train)
 
 pre = final_model.predict(test_stack)
@@ -97,7 +98,8 @@ class Stacker(object):
         y = np.array(y)
         T = np.array(predict_data)
 
-        folds = list(KFold(n_splits=self.n_splits, shuffle=False, random_state=2018).split(X, y))
+        folds = list(KFold(n_splits=self.n_splits, shuffle=False,
+                           random_state=2018).split(X, y))
 
         # 以基学习器预测结果为特征的 stacker的训练数据 与 stacker预测数据
         S_train = np.zeros((X.shape[0], len(self.base_models)))
@@ -118,7 +120,8 @@ class Stacker(object):
 
             S_predict[:, i] = S_predict_i.mean(axis=1)
 
-        nmse_score = cross_val_score(self.stacker, S_train, y, cv=5, scoring='neg_mean_squared_error')
+        nmse_score = cross_val_score(
+            self.stacker, S_train, y, cv=5, scoring='neg_mean_squared_error')
         print('CV MSE:', -nmse_score)
         print('Stacker AVG MSE:', -nmse_score.mean(), 'Stacker AVG Score:',
               np.mean(np.divide(1, 1 + np.sqrt(-nmse_score))))
@@ -141,3 +144,27 @@ class Stacker(object):
 # stacking_model = SVR(C=100, gamma=0.01, epsilon=0.01)
 # stacker = Stacker(5, stacking_model, regrs)
 # pred_stack, S_train_data, S_predict_data = stacker.fit_predict(all_X_train, all_y_train, sub_data)
+
+
+# https://tianchi.aliyun.com/notebook-ai/detail?postId=41822
+
+# 将lgb和xgb的结果进行stacking
+train_stack = np.vstack([oof_lgb, oof_xgb]).transpose()
+test_stack = np.vstack([predictions_lgb, predictions_xgb]).transpose()
+
+folds_stack = RepeatedKFold(n_splits=5, n_repeats=2, random_state=4590)
+oof_stack = np.zeros(train_stack.shape[0])
+predictions = np.zeros(test_stack.shape[0])
+
+for fold_, (trn_idx, val_idx) in enumerate(folds_stack.split(train_stack, target)):
+    print("fold {}".format(fold_))
+    trn_data, trn_y = train_stack[trn_idx], target.iloc[trn_idx].values
+    val_data, val_y = train_stack[val_idx], target.iloc[val_idx].values
+
+    clf_3 = BayesianRidge()
+    clf_3.fit(trn_data, trn_y)
+
+    oof_stack[val_idx] = clf_3.predict(val_data)
+    predictions += clf_3.predict(test_stack) / 10
+
+mean_squared_error(target.values, oof_stack)
