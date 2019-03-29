@@ -38,3 +38,7 @@ for fold_, (trn_idx, val_idx) in enumerate(folds.split(X_train, y_train)):
 
     predictions_lgb += clf.predict(X_test,
                                    num_iteration=clf.best_iteration) / folds.n_splits
+
+
+
+# https://github.com/TingNie/CreditForecast/blob/master/code.ipynb
