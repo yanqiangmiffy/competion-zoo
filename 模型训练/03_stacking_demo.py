@@ -2,7 +2,7 @@
 # -*- coding:utf-8 _*-
 """
 @Author:yanqiang
-@File: stacking_demo.py
+@File: 03_stacking_demo.py
 @Time: 2018/11/27 10:59
 @Software: PyCharm
 @Description:
