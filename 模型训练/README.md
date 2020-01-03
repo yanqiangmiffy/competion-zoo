@@ -14,7 +14,7 @@
 
 - `05_cross_valid.py` 5折交叉验证模板
 
-- `06_data_analysis.py` 数据分析常用函数
+- `06_train_model_regression.py` 回归任务baseline
 
-  `statics`  函数可以统计出DataFrame的缺失比例，不同值的个数，数据类型等
-  ![](https://upload-images.jianshu.io/upload_images/1531909-f4a823e1158ba37e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+- `07_train_model_classification.py` 分类任务baseline
+
